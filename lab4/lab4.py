@@ -15,10 +15,28 @@ def forward_checking(state, verbose=False):
     if not basic:
         return False
 
-    # Add your forward checking logic here.
+    var = state.get_current_variable()
     
-    raise NotImplementedError
-
+    if var!=None:  
+        value = var.get_assigned_value()
+        constraints=state.get_constraints_by_name(var.get_name());
+        for c in constraints:
+            if state.get_variable_by_name(c.get_variable_i_name()) is var:
+                Y = state.get_variable_by_name(c.get_variable_j_name())
+                for val in Y.get_domain():
+                    if c.check(state, value, val) is False:
+                        Y.reduce_domain(val)
+                    if Y.domain_size() is 0:
+                        return False
+            elif state.get_variable_by_name(c.get_variable_j_name()) is var:
+                Y = state.get_variable_by_name(c.get_variable_i_name())
+                for val in Y.get_domain():
+                    if c.check(state, val, value) is False:
+                        Y.reduce_domain(val)
+                    if Y.domain_size() is 0:
+                        return False
+    return True    
+    
 # Now Implement forward checking + (constraint) propagation through
 # singleton domains.
 def forward_checking_prop_singleton(state, verbose=False):
@@ -28,7 +46,45 @@ def forward_checking_prop_singleton(state, verbose=False):
         return False
 
     # Add your propagate singleton logic here.
-    raise NotImplementedError
+    singleton = []
+    flagged = []
+
+    for var in state.get_all_variables():
+        if var.domain_size() is 1:
+            singleton.append(var.get_name())
+
+    while len(singleton) is not 0:
+
+        X = state.get_variable_by_name(singleton[0])
+        value = X.get_domain()[0]
+
+        for c in state.get_constraints_by_name(singleton[0]):
+            i = state.get_variable_by_name(c.get_variable_i_name())
+            j = state.get_variable_by_name(c.get_variable_j_name())
+            if i == X:
+                for val in j.get_domain():
+                    if c.check(state, value, val) is False:
+                        j.reduce_domain(val)
+                    if j.domain_size() is 0:
+                        return False
+            elif j is X:
+                for val in i.get_domain():
+                    if c.check(state, val, value) is False:
+                        i.reduce_domain(val)
+                    if i.domain_size() is 0:
+                        return False
+        for var in state.get_all_variables():
+            varName=var.get_name()
+            if (var.domain_size() is 1) and (varName not in flagged) and (varName not in singleton):
+                singleton.append(varName)
+       
+        flagged.append(singleton[0])
+                
+        singleton.pop(0)
+        
+    return True
+    
+    
 
 ## The code here are for the tester
 ## Do not change.
@@ -70,7 +126,11 @@ senate_group1, senate_group2 = crosscheck_groups(senate_people)
 
 def euclidean_distance(list1, list2):
     # this is not the right solution!
-    return hamming_distance(list1, list2)
+    val=0
+    for i in xrange(len(list1)):
+        val+=(list1[i]-list2[i])**2
+            
+    return math.sqrt(val)
 
 #Once you have implemented euclidean_distance, you can check the results:
 #evaluate(nearest_neighbors(euclidean_distance, 1), senate_group1, senate_group2)
@@ -79,7 +139,7 @@ def euclidean_distance(list1, list2):
 ## deals better with independents. Make a classifier that makes at most 3
 ## errors on the Senate.
 
-my_classifier = nearest_neighbors(hamming_distance, 1)
+my_classifier = nearest_neighbors(euclidean_distance, 3)
 #evaluate(my_classifier, senate_group1, senate_group2, verbose=1)
 
 ### Part 2: ID Trees
@@ -89,8 +149,35 @@ my_classifier = nearest_neighbors(hamming_distance, 1)
 ## which should lead to simpler trees.
 
 def information_disorder(yes, no):
-    return homogeneous_disorder(yes, no)
+    yesList = []
 
+    for y in yes :
+        if y not in yesList:
+            yesList.append(y)
+    d1 = 0.0
+
+    for yClass in yesList:
+        f = yes.count(yClass)/float(len(yes))
+        d1 += -1*(f * math.log(f)/float(math.log(2)))
+        
+        
+    noList = []
+
+    for n in no:
+        if n not in noList:
+            noList.append(n)
+    
+    d2 = 0.0
+
+    for nClass in noList:
+        f = no.count(nClass)/float(len(no))
+        d2 += -1*(f * math.log(f)/float(math.log(2)))
+
+    tLen = float(len(no)) + float(len(yes))
+
+    return (len(yes)/tLen)*d1 + (len(no)/tLen)*d2
+    
+    
 #print CongressIDTree(senate_people, senate_votes, information_disorder)
 #evaluate(idtree_maker(senate_votes, homogeneous_disorder), senate_group1, senate_group2)
 
@@ -119,22 +206,22 @@ def limited_house_classifier(house_people, house_votes, n, verbose = False):
                                    
 ## Find a value of n that classifies at least 430 representatives correctly.
 ## Hint: It's not 10.
-N_1 = 10
+N_1 = 46
 rep_classified = limited_house_classifier(house_people, house_votes, N_1)
 
 ## Find a value of n that classifies at least 90 senators correctly.
-N_2 = 10
+N_2 = 70
 senator_classified = limited_house_classifier(senate_people, senate_votes, N_2)
 
 ## Now, find a value of n that classifies at least 95 of last year's senators correctly.
-N_3 = 10
+N_3 = 25
 old_senator_classified = limited_house_classifier(last_senate_people, last_senate_votes, N_3)
 
 
 ## The standard survey questions.
-HOW_MANY_HOURS_THIS_PSET_TOOK = ""
-WHAT_I_FOUND_INTERESTING = ""
-WHAT_I_FOUND_BORING = ""
+HOW_MANY_HOURS_THIS_PSET_TOOK = "7"
+WHAT_I_FOUND_INTERESTING = "knn concept"
+WHAT_I_FOUND_BORING = "APIs are a little tricky"
 
 
 ## This function is used by the tester, please don't modify it!
