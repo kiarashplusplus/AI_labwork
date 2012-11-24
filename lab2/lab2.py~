@@ -157,5 +157,5 @@ def is_consistent(graph, goal):
     return 1
 
 HOW_MANY_HOURS_THIS_PSET_TOOK = '7'
-WHAT_I_FOUND_INTERESTING = 'good practice'
-WHAT_I_FOUND_BORING = 'sorta repetitive'
+WHAT_I_FOUND_INTERESTING = 'meh'
+WHAT_I_FOUND_BORING = 'nothing much to learn'
