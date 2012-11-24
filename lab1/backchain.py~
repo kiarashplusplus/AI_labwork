@@ -29,7 +29,7 @@ def backchain_to_goal_tree(rules, hypothesis):
                             for j in rule.antecedent():
                                 if populate(j, i) is not None:
                                     hype.append(populate(j, i))
-                        elif i is not None:
+                        else if i is not None:
                             if populate(rule.antecedent(), i) is not None:
                                 hype.append(populate(rule.antecedent(), i))
 

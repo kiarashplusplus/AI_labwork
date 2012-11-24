@@ -90,7 +90,7 @@ poker_data = ( 'two-pair beats pair',
 # which poker hands beat which, transitively. For example, it
 # should be able to deduce that a three-of-a-kind beats a pair,
 # because a three-of-a-kind beats two-pair, which beats a pair.
-transitive_rule = IF( AND('(?x) beats (?y)','(?y) beats (?z)'), THEN('(?x) beats (?z)') )
+transitive_rule = IF( AND('(?y) beats (?z)','(?x) beats (?y)'), THEN('(?x) beats (?z)') )
 
 # You can test your rule like this:
 # print forward_chain([transitive_rule], poker_data)
@@ -115,18 +115,28 @@ TEST_RESULTS_TRANS2 = forward_chain([transitive_rule],
 # Then, put them together into a list in order, and call it
 # family_rules.
 same_identity = IF( OR('male (?x)', 'female (?x)'), THEN('same_identity (?x) (?x)'))
-sibling = IF( AND('parent (?z) (?x)', 'parent (?z) (?y)', NOT('same_identity (?x) (?y)')), THEN('sibling (?x) (?y)'))
-brother = IF( AND('male (?x)', 'sibling (?x) (?y)', NOT('same_identity (?x) (?y)')), THEN('brother (?x) (?y)'))
-sister = IF( AND('female (?x)', 'sibling (?x) (?y)', NOT('same_identity (?x) (?y)')), THEN('sister (?x) (?y)'))
-mother = IF( AND('female (?x)', 'parent (?x) (?y)', NOT('same_identity (?x) (?y)')), THEN('mother (?x) (?y)'))
-father = IF( AND('male (?x)', 'parent (?x) (?y)', NOT('same_identity (?x) (?y)')), THEN('father (?x) (?y)'))
-son = IF( AND('male (?x)', 'parent (?y) (?x)', NOT('same_identity (?x) (?y)')), THEN('son (?x) (?y)'))
-daughter = IF( AND('female (?x)', 'parent (?y) (?x)', NOT('same_identity (?x) (?y)')), THEN('daughter (?x) (?y)'))
-cousin = IF( AND('sibling (?a) (?b)', 'parent (?a) (?x)', 'parent (?b) (?y)', NOT('same_identity (?x) (?y)'), NOT('same_identity (?a) (?b)')), THEN('cousin (?x) (?y)'))
-grandparent = IF( AND('parent (?z) (?y)', 'parent (?x) (?z)', NOT('same_identity (?x) (?y)')), THEN('grandparent (?x) (?y)'))
-grandchild = IF( AND('parent (?z) (?x)', 'parent (?y) (?z)', NOT('same_identity (?x) (?y)')), THEN('grandchild (?x) (?y)'))
 
-family_rules = [same_identity, sibling, brother, sister, mother, father, son, daughter, cousin, grandparent, grandchild]                    # fill me in
+sibling = IF( AND('parent (?z) (?x)', 'parent (?z) (?y)', NOT('same_identity (?x) (?y)')), THEN('sibling (?x) (?y)'))
+
+sister = IF( AND('female (?x)', 'sibling (?x) (?y)'), THEN('sister (?x) (?y)'))
+
+brother = IF( AND('male (?x)', 'sibling (?x) (?y)'), THEN('brother (?x) (?y)'))
+
+father = IF( AND('male (?x)', 'parent (?x) (?y)'), THEN('father (?x) (?y)'))
+
+mother = IF( AND('female (?x)', 'parent (?x) (?y)'), THEN('mother (?x) (?y)'))
+
+daughter = IF( AND('female (?x)', 'parent (?y) (?x)'), THEN('daughter (?x) (?y)'))
+
+son = IF( AND('male (?x)', 'parent (?y) (?x)'), THEN('son (?x) (?y)'))
+
+cousin = IF( AND('sibling (?a) (?b)', 'parent (?a) (?x)', 'parent (?b) (?y)'), THEN('cousin (?x) (?y)'))
+
+grandparent = IF( AND( 'parent (?x) (?z)','parent (?z) (?y)', NOT('same_identity (?x) (?y)')), THEN('grandparent (?x) (?y)'))
+
+grandchild = IF( AND('parent (?y) (?z)','parent (?z) (?x)',  NOT('same_identity (?x) (?y)')), THEN('grandchild (?x) (?y)'))
+
+family_rules = [same_identity, sibling, sister,brother,father,mother,  daughter,son, cousin, grandparent, grandchild]                    # fill me in
 
 # Some examples to try it on:
 # Note: These are used for testing, so DO NOT CHANGE
@@ -226,6 +236,6 @@ from backchain import backchain_to_goal_tree
 # Please answer these questions inside the double quotes.
 
 HOW_MANY_HOURS_THIS_PSET_TOOK = '12'
-WHAT_I_FOUND_INTERESTING = ''
-WHAT_I_FOUND_BORING = ''
+WHAT_I_FOUND_INTERESTING = 'learning the material'
+WHAT_I_FOUND_BORING = 'it was lengthy'
 
